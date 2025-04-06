@@ -1,46 +1,28 @@
-import os
-from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
-from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, CallbackContext
+from telegram import Update
+from telegram.ext import Updater, CommandHandler, CallbackContext
 
-# Получаем токен из переменной окружения TELEGRAM_TOKEN
-TOKEN = os.environ.get('TELEGRAM_TOKEN')
-
+# Функция, которая будет вызвана при команде /start
 def start(update: Update, context: CallbackContext) -> None:
-    keyboard = [
-        [InlineKeyboardButton("Получать сигналы", callback_data='subscribe')],
-        [InlineKeyboardButton("История", callback_data='history')],
-        [InlineKeyboardButton("Отписаться", callback_data='unsubscribe')]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    update.message.reply_text(
-        "Привет! Я бот для сигналов. Выберите действие:", reply_markup=reply_markup
-    )
-
-def button_handler(update: Update, context: CallbackContext) -> None:
-    query = update.callback_query
-    query.answer()
-    data = query.data
-    if data == 'subscribe':
-        query.edit_message_text("Вы подписались на сигналы!")
-    elif data == 'history':
-        query.edit_message_text("История сигналов (фейковые данные):\n- Signal 1\n- Signal 2\n- Signal 3")
-    elif data == 'unsubscribe':
-        query.edit_message_text("Вы отписались от сигналов!")
-    else:
-        query.edit_message_text("Неизвестная команда.")
+    update.message.reply_text('Привет! Я ваш бот.')
 
 def main():
-    if not TOKEN:
-        raise ValueError("Переменная окружения TELEGRAM_TOKEN не установлена!")
-    
-    updater = Updater(TOKEN)
-    dispatcher = updater.dispatcher
+    # Получаем токен из переменной окружения
+    import os
+    token = os.getenv('TELEGRAM_TOKEN')
 
-    dispatcher.add_handler(CommandHandler("start", start))
-    dispatcher.add_handler(CallbackQueryHandler(button_handler))
+    # Создаем объект Updater и передаем ему токен бота
+    updater = Updater(token)
 
-    # Запускаем бота в режиме polling (для разработки)
+    # Получаем диспетчер для регистрации обработчиков
+    dp = updater.dispatcher
+
+    # Регистрируем обработчик для команды /start
+    dp.add_handler(CommandHandler("start", start))
+
+    # Запускаем бота
     updater.start_polling()
+
+    # Останавливаем бота при завершении работы скрипта
     updater.idle()
 
 if __name__ == '__main__':
