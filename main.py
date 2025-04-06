@@ -1,21 +1,19 @@
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import os
-import logging
-from aiogram import Bot, Dispatcher, types
-from aiogram.filters import CommandStart
-import asyncio
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
+# Команда /start
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Привет! Я бот AnatomyOfCrypto. Готов принимать сигналы.")
 
-bot = Bot(token=BOT_TOKEN)
-dp = Dispatcher()
+def main():
+    token = os.getenv("BOT_TOKEN")  # Убедись, что переменная в Render называется именно BOT_TOKEN
 
-@dp.message(CommandStart())
-async def start_handler(message: types.Message):
-    await message.answer("Привет, Влад! Бот работает ✅")
+    app = ApplicationBuilder().token(token).build()
+    app.add_handler(CommandHandler("start", start))
 
-async def main():
-    logging.basicConfig(level=logging.INFO)
-    await dp.start_polling(bot)
+    print("Бот запущен...")
+    app.run_polling()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
