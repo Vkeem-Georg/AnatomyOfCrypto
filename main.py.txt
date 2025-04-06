@@ -1,0 +1,47 @@
+import os
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
+from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, CallbackContext
+
+# Получаем токен из переменной окружения TELEGRAM_TOKEN
+TOKEN = os.environ.get('TELEGRAM_TOKEN')
+
+def start(update: Update, context: CallbackContext) -> None:
+    keyboard = [
+        [InlineKeyboardButton("Получать сигналы", callback_data='subscribe')],
+        [InlineKeyboardButton("История", callback_data='history')],
+        [InlineKeyboardButton("Отписаться", callback_data='unsubscribe')]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    update.message.reply_text(
+        "Привет! Я бот для сигналов. Выберите действие:", reply_markup=reply_markup
+    )
+
+def button_handler(update: Update, context: CallbackContext) -> None:
+    query = update.callback_query
+    query.answer()
+    data = query.data
+    if data == 'subscribe':
+        query.edit_message_text("Вы подписались на сигналы!")
+    elif data == 'history':
+        query.edit_message_text("История сигналов (фейковые данные):\n- Signal 1\n- Signal 2\n- Signal 3")
+    elif data == 'unsubscribe':
+        query.edit_message_text("Вы отписались от сигналов!")
+    else:
+        query.edit_message_text("Неизвестная команда.")
+
+def main():
+    if not TOKEN:
+        raise ValueError("Переменная окружения TELEGRAM_TOKEN не установлена!")
+    
+    updater = Updater(TOKEN)
+    dispatcher = updater.dispatcher
+
+    dispatcher.add_handler(CommandHandler("start", start))
+    dispatcher.add_handler(CallbackQueryHandler(button_handler))
+
+    # Запускаем бота в режиме polling (для разработки)
+    updater.start_polling()
+    updater.idle()
+
+if __name__ == '__main__':
+    main()
